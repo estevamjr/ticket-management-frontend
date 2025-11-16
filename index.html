@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP Sistema de Tickets (SPA Puro)</title>
+    <link rel="icon" type="image/jpg" href="logo.jpg">
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide-react@0.379.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+    <div class="main-container">
+
+        <div class="sidebar">
+            <h1 class="logo">Ticket<span class="logo-highlight">Man</span></h1>
+            
+            <div class="form-section" id="auth-section">
+                <h2><i data-lucide="lock" class="icon"></i> Autenticação (JWT)</h2>
+                
+                <input type="text" id="reg-username" placeholder="Novo Usuário (ex: estevam)">
+                <input type="password" id="reg-password" placeholder="Nova Senha (ex: 123)">
+                <button id="registerUserBtn">1. Registrar Novo Usuário</button>
+                
+                <hr class="divider">
+                
+                <input type="text" id="login-username" placeholder="Usuário (ex: estevam)">
+                <input type="password" id="login-password" placeholder="Senha (ex: 123)">
+                <button id="loginBtn">2. Efetuar Login (Obter Token)</button>
+            </div>
+
+            <div class="form-section" id="ticket-section" style="display: none;">
+                <h2><i data-lucide="plus-circle" class="icon"></i> Abrir Novo Chamado</h2>
+                <input type="text" id="ticketTitle" placeholder="Título do Chamado">
+                <textarea id="ticketDescription" placeholder="Descrição Detalhada"></textarea>
+                <select id="ticketPriority">
+                    <option value="Baixa">Prioridade: Baixa</option>
+                    <option value="Média">Prioridade: Média</option>
+                    <option value="Alta">Prioridade: Alta</option>
+                </select>
+                <button id="registerTicketBtn">Criar Ticket (Protegido)</button>
+            </div>
+            
+            <div id="message" class="message"></div>
+
+            <div class="footer-social">
+                <a href="https://www.linkedin.com/in/estevamjr/" target="_blank">
+                    <i data-lucide="linkedin" class="icon"></i> LinkedIn
+                </a>
+                <a href="https://www.instagram.com/_cyberbison_" target="_blank">
+                    <i data-lucide="instagram" class="icon"></i> Instagram
+                </a>
+                <a href="https://github.com/estevamjr" target="_blank">
+                    <i data-lucide="githhub" class="icon"></i> GitHub
+                </a>
+            </div>
+
+        </div>
+
+        <div class="report-container">
+            
+            <button id="logoutBtn" class="logout-button" style="display: none;">Deslogar</button>
+            
+            <div class="report-section">
+                <h2><i data-lucide="layout-list" class="icon"></i> Board de Tickets</h2>
+                
+                <div class="ticket-board-container">
+                    
+                    <div class="ticket-column">
+                        <h3 class="column-title">Aberto</h3>
+                        <div class="ticket-list" id="column-aberto">
+                            <p class="loading-text">Aguardando login...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="ticket-column">
+                        <h3 class="column-title">Em Análise</h3>
+                        <div class="ticket-list" id="column-analise">
+                            </div>
+                    </div>
+                    
+                    <div class="ticket-column">
+                        <h3 class="column-title">Fechado</h3>
+                        <div class="ticket-list" id="column-fechado">
+                            </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <div class="report-section">
+                <h2><i data-lucide="clipboard-list" class="icon"></i> Relatório de Atividades</h2>
+                <div id="logListContainer">
+                    <p class="loading-text">Aguardando login...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // Inicializa os ícones
+        lucide.createIcons();
+    </script>
+</body>
+</html>
