@@ -149,13 +149,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>Status: ${ticket.status}</p>
                 <p><small>Criador: ${creatorName}</small></p>
             </div>
-            <button data-id="${ticket.id}" class="delete-btn">Fechar (X)</button>
+            <button data-id="${ticket.id}" class="delete-btn">Delete (X)</button>
         `;
         return ticketCard;
     }
 
     async function fetchAndRenderTickets() {
-        const columnAberto = document.getElementById('column-aberto');
+        const columnOpen = document.getElementById('column-Open');
         
         try {
             const response = await fetchProtected('/tickets/list');
@@ -169,19 +169,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const ticketCard = createTicketCardElement(ticket);
                     
                     // Lógica para colocar o card na coluna certa
-                    if(ticket.status === 'Aberto') {
-                         document.getElementById('column-aberto').appendChild(ticketCard);
-                    } else if (ticket.status === 'Em Análise') {
+                    if(ticket.status === 'Open') {
+                         document.getElementById('column-Open').appendChild(ticketCard);
+                    } else if (ticket.status === 'In Progress') {
                          document.getElementById('column-analise').appendChild(ticketCard);
-                    } else if (ticket.status === 'Fechado') {
-                         document.getElementById('column-fechado').appendChild(ticketCard);
+                    } else if (ticket.status === 'Closed') {
+                         document.getElementById('column-Closed').appendChild(ticketCard);
                     } else {
-                         document.getElementById('column-aberto').appendChild(ticketCard); // Padrão
+                         document.getElementById('column-Open').appendChild(ticketCard); // Padrão
                     }
                 });
             } else if (response.status === 200 && (!data.data || data.data.length === 0)) {
                  // 200 OK com lista vazia (corrigido no backend)
-                 columnAberto.innerHTML = '<p>Nenhum ticket cadastrado.</p>';
+                 columnOpen.innerHTML = '<p>Nenhum ticket cadastrado.</p>';
             } else {
                  showMessage(data.message || 'Erro ao buscar tickets.', 'error');
             }
@@ -250,10 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 showMessage(`Ticket criado com sucesso!`, 'success');
                 clearTicketFormFields(); // Limpa o formulário
                 
-                // Adiciona o novo card diretamente na coluna "Aberto"
+                // Adiciona o novo card diretamente na coluna "Open"
                 const newTicket = data.data; // O ticket está em 'data'
                 const ticketCard = createTicketCardElement(newTicket);
-                document.getElementById('column-aberto').appendChild(ticketCard);
+                document.getElementById('column-Open').appendChild(ticketCard);
 
                 fetchAndRenderLogs(); // Atualiza o relatório de logs
             } else {

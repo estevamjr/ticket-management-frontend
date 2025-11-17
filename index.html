@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MVP Sistema de Tickets (SPA Puro)</title>
+    <title>MVP Sistema de Tickets</title>
     <link rel="icon" type="image/jpg" href="logo.jpg">
     
     <link rel="stylesheet" href="style.css">
@@ -16,29 +16,30 @@
             <h1 class="logo">Ticket<span class="logo-highlight">Man</span></h1>
             
             <div class="form-section" id="auth-section">
-                <h2><i data-lucide="lock" class="icon"></i> Autenticação (JWT)</h2>
+                <h2><i data-lucide="lock" class="icon"></i> Authentication (JWT)</h2>
                 
-                <input type="text" id="reg-username" placeholder="Novo Usuário (ex: estevam)">
-                <input type="password" id="reg-password" placeholder="Nova Senha (ex: 123)">
-                <button id="registerUserBtn">1. Registrar Novo Usuário</button>
+                <input type="text" id="reg-username" placeholder="New user (ex: estevam)">
+                <input type="password" id="reg-password" placeholder="New pass (ex: 123)">
+                <button id="registerUserBtn">1. Register new user</button>
                 
                 <hr class="divider">
                 
-                <input type="text" id="login-username" placeholder="Usuário (ex: estevam)">
-                <input type="password" id="login-password" placeholder="Senha (ex: 123)">
-                <button id="loginBtn">2. Efetuar Login (Obter Token)</button>
+                <input type="text" id="login-username" placeholder="User (ex: estevam)">
+                <input type="password" id="login-password" placeholder="Pass (ex: 123)">
+                <button id="loginBtn">2. Login </button>
             </div>
 
             <div class="form-section" id="ticket-section" style="display: none;">
-                <h2><i data-lucide="plus-circle" class="icon"></i> Abrir Novo Chamado</h2>
-                <input type="text" id="ticketTitle" placeholder="Título do Chamado">
-                <textarea id="ticketDescription" placeholder="Descrição Detalhada"></textarea>
+                <h2><i data-lucide="plus-circle" class="icon"></i> New Ticket</h2>
+                <input type="text" id="ticketTitle" placeholder="Title">
+                <textarea id="ticketDescription" placeholder="Description"></textarea>
                 <select id="ticketPriority">
-                    <option value="Baixa">Prioridade: Baixa</option>
-                    <option value="Média">Prioridade: Média</option>
-                    <option value="Alta">Prioridade: Alta</option>
+                    <option value="" disabled selected>Shoosed Priority</option>
+                    <option value="Low">Low</option>
+                    <option value="Middle">Middle</option>
+                    <option value="High">High</option>
                 </select>
-                <button id="registerTicketBtn">Criar Ticket (Protegido)</button>
+                <button id="registerTicketBtn">Create</button>
             </div>
             
             <div id="message" class="message"></div>
@@ -59,29 +60,29 @@
 
         <div class="report-container">
             
-            <button id="logoutBtn" class="logout-button" style="display: none;">Deslogar</button>
+            <button id="logoutBtn" class="logout-button" style="display: none;">Logout</button>
             
             <div class="report-section">
-                <h2><i data-lucide="layout-list" class="icon"></i> Board de Tickets</h2>
+                <h2><i data-lucide="layout-list" class="icon"></i> KanBan Ticket Board</h2>
                 
                 <div class="ticket-board-container">
                     
                     <div class="ticket-column">
-                        <h3 class="column-title">Aberto</h3>
-                        <div class="ticket-list" id="column-aberto">
-                            <p class="loading-text">Aguardando login...</p>
+                        <h3 class="column-title">Open</h3>
+                        <div class="ticket-list" id="column-Open">
+                            <p class="loading-text">Waiting login...</p>
                         </div>
                     </div>
                     
                     <div class="ticket-column">
-                        <h3 class="column-title">Em Análise</h3>
+                        <h3 class="column-title">In Progress</h3>
                         <div class="ticket-list" id="column-analise">
                             </div>
                     </div>
                     
                     <div class="ticket-column">
-                        <h3 class="column-title">Fechado</h3>
-                        <div class="ticket-list" id="column-fechado">
+                        <h3 class="column-title">Closed</h3>
+                        <div class="ticket-list" id="column-Closed">
                             </div>
                     </div>
 
@@ -89,9 +90,9 @@
             </div>
             
             <div class="report-section">
-                <h2><i data-lucide="clipboard-list" class="icon"></i> Relatório de Atividades</h2>
+                <h2><i data-lucide="clipboard-list" class="icon"></i> Activity Report </h2>
                 <div id="logListContainer">
-                    <p class="loading-text">Aguardando login...</p>
+                    <p class="loading-text">Waiting login...</p>
                 </div>
             </div>
         </div>

@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 1, username: 'admin', password: '123' }
         ],
         tickets: [
-            { id: 't1_mock', title: 'Ticket de Exemplo (Alta)', description: '...', priority: 'Alta', status: 'Aberto', creator_username: 'admin' },
-            { id: 't2_mock', title: 'Ticket de Exemplo (Baixa)', description: '...', priority: 'Baixa', status: 'Aberto', creator_username: 'admin' }
+            { id: 't1_mock', title: 'Ticket de Exemplo (Alta)', description: '...', priority: 'Alta', status: 'Open', creator_username: 'admin' },
+            { id: 't2_mock', title: 'Ticket de Exemplo (Baixa)', description: '...', priority: 'Baixa', status: 'Open', creator_username: 'admin' }
         ],
         logs: [
             { id: 'l1_mock', action: 'START', details: 'Sistema mockado iniciado.', timestamp: new Date().toISOString() }
@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const authSection = document.getElementById('auth-section');
     const ticketSection = document.getElementById('ticket-section');
     
-    // MODIFICADO: Container de tickets agora é a coluna "Aberto"
-    const ticketListContainer = document.getElementById('column-aberto'); 
+    // MODIFICADO: Container de tickets agora é a coluna "Open"
+    const ticketListContainer = document.getElementById('column-Open'); 
     
     const logListContainer = document.getElementById('logListContainer');
     const messageDisplay = document.getElementById('message');
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica de Tickets (Mock) ---
 
-    // MODIFICADO: Renderiza os tickets na coluna "Aberto"
+    // MODIFICADO: Renderiza os tickets na coluna "Open"
     function fetchAndRenderTickets() {
         if (!global_access_token) {
             showMessage("Erro fatal: Token de acesso não encontrado.", "error");
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: title,
             description: description,
             priority: priority,
-            status: 'Aberto', // Novos tickets sempre começam como "Aberto"
+            status: 'Open', // Novos tickets sempre começam como "Open"
             creator_username: MOCK_DB.currentUser.username
         };
         MOCK_DB.tickets.push(newTicket); // Salva no "banco" mock
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             timestamp: new Date().toISOString()
         });
 
-        // MODIFICADO: Adiciona o novo ticket direto na coluna "Aberto"
+        // MODIFICADO: Adiciona o novo ticket direto na coluna "Open"
         const ticketCard = createTicketCardElement(newTicket);
         ticketListContainer.appendChild(ticketCard);
 
