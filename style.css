@@ -1,10 +1,9 @@
-/* 1. Variáveis de Cor (Tema "Hightech") */
 :root {
-    --bg-primary: #111827; /* Fundo principal (quase preto) */
-    --bg-secondary: #1F2937; /* Fundo da sidebar */
-    --bg-tertiary: #374151; /* Fundo dos cards */
-    --text-primary: #F3F4F6; /* Texto principal (branco) */
-    --text-secondary: #9CA3AF; /* Texto (cinza claro) */
+    --bg-primary: #111827; 
+    --bg-secondary: #1F2937; 
+    --bg-tertiary: #374151; 
+    --text-primary: #F3F4F6; 
+    --text-secondary: #9CA3AF; 
     --accent-blue: #3B82F6;
     --accent-red: #EF4444;
     --accent-yellow: #EAB308;
@@ -12,7 +11,7 @@
     --border-color: #4B5563;
 }
 
-/* 2. Reset e Base */
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-primary);
@@ -23,7 +22,7 @@ body {
 
 .main-container {
     display: flex;
-    flex-wrap: wrap; /* Permite quebrar em telas menores */
+    flex-wrap: wrap; 
     width: 100%;
     min-height: 100vh;
 }
@@ -36,7 +35,7 @@ body {
     vertical-align: middle;
 }
 
-/* 3. Sidebar (Formulários) */
+
 .sidebar {
     width: 380px;
     background-color: var(--bg-secondary);
@@ -45,7 +44,7 @@ body {
     border-right: 1px solid var(--border-color);
     height: 100vh;
     box-sizing: border-box;
-    /* ADICIONADO: Flex para manter o rodapé embaixo */
+    
     display: flex;
     flex-direction: column;
 }
@@ -128,7 +127,7 @@ button#registerUserBtn:hover {
     margin: 20px 0;
 }
 
-/* 4. Relatórios (Tickets e Logs) */
+
 .report-container {
     flex-grow: 1;
     overflow-y: auto;
@@ -153,21 +152,17 @@ button#registerUserBtn:hover {
     font-style: italic;
 }
 
-/* 5. Board e Cards (Tickets) */
 
-/* ADICIONADO: Container do Board */
+
+
 .ticket-board-container {
     display: flex;
     gap: 16px;
     width: 100%;
-    /* min-height: 300px;
-    max-height: 70vh; 
-    min-height: 400px; 
-    overflow-y: auto;  */
     padding-bottom: 10px; 
 }
 
-/* ADICIONADO: Coluna do Board */
+
 .ticket-column {
     flex: 1; 
     background-color: var(--bg-secondary);
@@ -194,7 +189,7 @@ button#registerUserBtn:hover {
     padding-right: 5px;
 }
 
-/* MODIFICADO: Estilo do Card */
+
 .ticket-card { 
     background: var(--bg-tertiary);
     padding: 15px; 
@@ -204,26 +199,26 @@ button#registerUserBtn:hover {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    cursor: grab; /* ADICIONADO: Indica que é arrastável */
+    cursor: grab; 
 }
 .ticket-card p { margin: 0; font-size: 14px; }
 .ticket-card .details { flex-grow: 1; }
 .ticket-card .details p { color: var(--text-secondary); }
 .ticket-card .details strong { color: var(--text-primary); font-size: 1.1rem; }
 
-/* ADICIONADO: Classe para card sendo arrastado */
+
 .ticket-card.dragging {
     opacity: 0.5;
     transform: rotate(2deg);
 }
-/* ADICIONADO: Classe para coluna recebendo o card */
+
 .ticket-column .ticket-list.drag-over {
     background-color: rgba(59, 130, 246, 0.1);
     border: 1px dashed var(--accent-blue);
 }
 
 
-/* Cores de Prioridade */
+
 .priority-Alta { border-left: 5px solid var(--accent-red); }
 .priority-Média { border-left: 5px solid var(--accent-yellow); }
 .priority-Baixa { border-left: 5px solid var(--accent-blue); }
@@ -235,12 +230,12 @@ button#registerUserBtn:hover {
     padding: 6px 12px; 
     border-radius: 4px; 
     cursor: pointer;
-    width: auto; /* Sobrescreve o width: 100% dos botões */
+    width: auto; 
     font-size: 0.9rem;
 }
 .delete-btn:hover { background-color: #B91C1C; }
 
-/* Logs */
+
 #logListContainer {
     max-height: 300px;
     overflow-y: auto;
@@ -263,7 +258,7 @@ button#registerUserBtn:hover {
 .log-card .details { color: var(--text-secondary); }
 .log-card .timestamp { font-size: 0.8rem; color: var(--text-secondary); }
 
-/* 6. Classes de Mensagem (JS) */
+
 .message {
     font-weight: 600;
     margin-top: 15px;
@@ -271,7 +266,7 @@ button#registerUserBtn:hover {
     border-radius: 6px;
     display: none;
     font-size: 0.9rem;
-    text-align: center; /* ADICIONADO: Centraliza texto */
+    text-align: center; 
 }
 .message.error {
     display: block;
@@ -286,11 +281,11 @@ button#registerUserBtn:hover {
     border: 1px solid var(--accent-green);
 }
 
-/* 7. Adições da Lista de Melhorias */
 
-/* Rodapé */
+
+
 .footer-social {
-    margin-top: auto; /* Joga o rodapé para baixo */
+    margin-top: auto; 
     padding-top: 20px;
     border-top: 1px solid var(--border-color);
     text-align: center;
@@ -310,14 +305,14 @@ button#registerUserBtn:hover {
     stroke-width: 2;
 }
 
-/* Botão de Logout */
+
 .logout-button {
     background-color: var(--accent-red);
     color: white;
-    width: auto; /* Sobrescreve o 100% */
+    width: auto; 
     padding: 8px 16px;
     font-size: 0.9rem;
-    float: right; /* Joga para a direita */
+    float: right; 
     margin-bottom: 10px;
 }
 .logout-button:hover {

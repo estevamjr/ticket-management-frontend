@@ -1,11 +1,8 @@
-// Aguarda o DOM carregar
 document.addEventListener('DOMContentLoaded', () => {
     
-    // REMOVIDO: 'lucide.createIcons();' para evitar quebra do script
     
     let global_access_token = null; 
 
-    // MOCK: Simulação de um banco de dados local
     let MOCK_DB = {
         users: [
             { id: 1, username: 'admin', password: '123' }
@@ -17,14 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
         logs: [
             { id: 'l1_mock', action: 'START', details: 'Sistema mockado iniciado.', timestamp: new Date().toISOString() }
         ],
-        currentUser: null // Armazena quem está logado
+        currentUser: null 
     };
 
-    // --- Seletores do DOM ---
     const authSection = document.getElementById('auth-section');
     const ticketSection = document.getElementById('ticket-section');
     
-    // MODIFICADO: Container de tickets agora é a coluna "Open"
     const ticketListContainer = document.getElementById('column-Open'); 
     
     const logListContainer = document.getElementById('logListContainer');
@@ -34,11 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
     const registerTicketBtn = document.getElementById('registerTicketBtn');
 
-    // ADICIONADO: Seletores para Login com Enter e Logout
     const loginPasswordInput = document.getElementById('login-password');
     const logoutBtn = document.getElementById('logoutBtn');
-
-    // --- Funções Auxiliares ---
 
     function showMessage(text, type = 'error') {
         messageDisplay.textContent = text;
@@ -51,8 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('ticketDescription').value = '';
         document.getElementById('ticketPriority').value = 'Baixa';
     }
-
-    // --- Lógica de Autenticação (Mock) ---
 
     registerUserBtn.addEventListener('click', () => {
         const username = document.getElementById('reg-username').value;
@@ -98,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             authSection.style.display = 'none';
             ticketSection.style.display = 'block';
-            logoutBtn.style.display = 'block'; // ADICIONADO: Mostra botão de logout
+            logoutBtn.style.display = 'block';
 
             fetchAndRenderTickets();
             fetchAndRenderLogs();
@@ -109,35 +99,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ADICIONADO: Login com "Enter"
     loginPasswordInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             loginBtn.click();
         }
     });
 
-    // ADICIONADO: Logout
     logoutBtn.addEventListener('click', () => {
-        location.reload(); // Simplesmente recarrega a página para o estado inicial
+        location.reload(); 
     });
 
 
-    // --- Lógica de Tickets (Mock) ---
-
-    // MODIFICADO: Renderiza os tickets na coluna "Open"
     function fetchAndRenderTickets() {
         if (!global_access_token) {
             showMessage("Erro fatal: Token de acesso não encontrado.", "error");
             return;
         }
         
-        ticketListContainer.innerHTML = ''; // Limpa o "Aguardando login..."
+        ticketListContainer.innerHTML = ''; 
         
         const tickets = MOCK_DB.tickets;
 
         if (tickets && tickets.length > 0) {
             tickets.forEach(ticket => {
-                // Re-usa a função de criar card para adicionar os tickets existentes
                 const ticketCard = createTicketCardElement(ticket);
                 ticketListContainer.appendChild(ticketCard);
             });
@@ -146,12 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ADICIONADO: Função separada para criar o elemento do card
     function createTicketCardElement(ticket) {
         const ticketCard = document.createElement('div');
         ticketCard.className = `ticket-card priority-${ticket.priority}`; 
         ticketCard.id = `ticket-${ticket.id}`;
-        ticketCard.draggable = true; // ADICIONADO: Torna o card arrastável
+        ticketCard.draggable = true; 
 
         ticketCard.innerHTML = `
             <div class="details">
@@ -184,10 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
             title: title,
             description: description,
             priority: priority,
-            status: 'Open', // Novos tickets sempre começam como "Open"
+            status: 'Open', 
             creator_username: MOCK_DB.currentUser.username
         };
-        MOCK_DB.tickets.push(newTicket); // Salva no "banco" mock
+        MOCK_DB.tickets.push(newTicket); 
 
         MOCK_DB.logs.push({
             id: `l${MOCK_DB.logs.length + 1}_mock`,
@@ -196,16 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
             timestamp: new Date().toISOString()
         });
 
-        // MODIFICADO: Adiciona o novo ticket direto na coluna "Open"
         const ticketCard = createTicketCardElement(newTicket);
         ticketListContainer.appendChild(ticketCard);
 
         showMessage(`Ticket criado com sucesso!`, 'success');
         clearTicketFormFields(); 
-        fetchAndRenderLogs(); // Apenas atualiza os logs
+        fetchAndRenderLogs(); // 
     });
 
-    // MODIFICADO: A deleção agora é escutada no container do board
     const boardContainer = document.querySelector('.ticket-board-container');
     boardContainer.addEventListener('click', (event) => {
         if (event.target.classList.contains('delete-btn')) {
@@ -229,16 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 showMessage(`Ticket ${ticketId.substring(0, 8)}... deletado.`, 'success');
-                document.getElementById(`ticket-${ticketId}`).remove(); // Remove da tela
-                fetchAndRenderLogs(); // Atualiza o relatório de logs
+                document.getElementById(`ticket-${ticketId}`).remove(); 
+                fetchAndRenderLogs(); 
             } else {
                  showMessage(`Erro: Ticket ${ticketId} não encontrado no Mock DB.`, 'error');
             }
         }
     });
 
-
-    // --- Lógica de Logs (Mock) ---
 
     function fetchAndRenderLogs() {
         if (!global_access_token) return; 
@@ -266,21 +245,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- ADICIONADO: Lógica de Drag-and-Drop ---
-    
-    let draggedCard = null; // Variável para guardar o card sendo arrastado
+   
+    let draggedCard = null; 
 
-    // Escuta o início do arraste em qualquer card dentro do board
     boardContainer.addEventListener('dragstart', (event) => {
         if (event.target.classList.contains('ticket-card')) {
             draggedCard = event.target;
             event.target.classList.add('dragging');
-            // Guarda o ID para o 'drop'
             event.dataTransfer.setData('text/plain', event.target.id);
         }
     });
 
-    // Escuta o fim do arraste (se soltou ou cancelou)
     boardContainer.addEventListener('dragend', (event) => {
         if (draggedCard) {
             draggedCard.classList.remove('dragging');
@@ -288,40 +263,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Escuta as colunas
     const columns = document.querySelectorAll('.ticket-list');
     columns.forEach(column => {
-        // Quando um card passa por cima da coluna
         column.addEventListener('dragover', (event) => {
             event.preventDefault(); // ESSENCIAL: Permite o 'drop'
             column.classList.add('drag-over');
         });
 
-        // Quando o card sai de cima da coluna
         column.addEventListener('dragleave', () => {
             column.classList.remove('drag-over');
         });
 
-        // Quando o card é solto (drop) na coluna
         column.addEventListener('drop', (event) => {
             event.preventDefault();
             column.classList.remove('drag-over');
             
-            // Pega o card que está sendo arrastado (que guardamos no 'dragstart')
             const cardId = event.dataTransfer.getData('text/plain');
            const card = document.getElementById(cardId);
             
             if (card) {
-                column.appendChild(card); // Move o card para a nova coluna
-
-                // ATUALIZA O STATUS MOCK (somente visual)
+                column.appendChild(card); 
                 const statusElement = card.querySelector('.details p:nth-child(2)');
                 const newStatus = column.parentElement.querySelector('.column-title').textContent;
                 if(statusElement) {
                     statusElement.textContent = `Status: ${newStatus}`;
                 }
 
-                // (Aqui, na versão final, você faria o fetch PATCH para o backend)
             }
         });
     });

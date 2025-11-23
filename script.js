@@ -1,8 +1,4 @@
-// Aguarda o DOM carregar
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // Deixamos a inicialização dos ícones aqui, mas
-    // a movemos para o final do HTML para garantir
     
     const API_URL = 'http://127.0.0.1:5000';
     
@@ -11,9 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const authSection = document.getElementById('auth-section');
     const ticketSection = document.getElementById('ticket-section');
     
-    // Container principal do board (onde as colunas estão)
     const boardContainer = document.querySelector('.ticket-board-container');
-    // Container de logs
     const logListContainer = document.getElementById('logListContainer');
     const messageDisplay = document.getElementById('message');
     
@@ -21,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
     const registerTicketBtn = document.getElementById('registerTicketBtn');
 
-    // ADICIONADO: Seletores para Login com Enter e Logout
     const loginPasswordInput = document.getElementById('login-password');
     const logoutBtn = document.getElementById('logoutBtn');
 
@@ -43,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('reg-password').value;
 
         if (!username || !password) {
-            showMessage("Novo Usuário e Nova Senha são obrigatórios.", "error");
+            showMessage("New user and Password are required for registration.", "error");
             return;
         }
 
@@ -56,12 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.status === 201) {
-                showMessage(`Usuário '${username}' criado! Agora faça o login.`, 'success');
+                showMessage(`User '${username}' registered successfully! You can now log in.`, 'success');
             } else {
-                showMessage(`Erro ${response.status}: ${data.message || data.error}`, 'error');
+                showMessage(`error ${response.status}: ${data.message || data.error}`, 'error');
             }
         } catch (error) {
-            showMessage('Erro de rede ao registrar. Backend está rodando?', 'error');
+            showMessage('error connecting to register. Please contact local Support?', 'error');
         }
     });
 
@@ -70,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('login-password').value;
 
         if (!username || !password) {
-            showMessage("Usuário e Senha são obrigatórios para o login.", "error");
+            showMessage("User and Password are required to log in.", "error");
             return;
         }
 
@@ -84,15 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.status === 200) {
-                showMessage(`Login de '${username}' bem-sucedido!`, 'success');
-                global_access_token = data.access_token; // <--- ARMAZENA O TOKEN
-                
-                // Esconde a autenticação e mostra a criação de tickets
+                showMessage(`Login successful! Welcome, ${username}.`, 'success');
+                global_access_token = data.access_token;
                 authSection.style.display = 'none';
                 ticketSection.style.display = 'block';
-                logoutBtn.style.display = 'block'; // Mostra o botão de logout
-
-                // Carrega os dados protegidos
+                logoutBtn.style.display = 'block';
                 fetchAndRenderTickets();
                 fetchAndRenderLogs();
             } else {
@@ -104,26 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ADICIONADO: Login com "Enter"
     loginPasswordInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
             loginBtn.click();
         }
     });
 
-    // ADICIONADO: Logout
     logoutBtn.addEventListener('click', () => {
-        location.reload(); // Simplesmente recarrega a página para o estado inicial
+        location.reload(); 
     });
 
-    // Wrapper para chamadas protegidas
     async function fetchProtected(endpoint, options = {}) {
         if (!global_access_token) {
-            showMessage("Erro fatal: Token de acesso não encontrado.", "error");
-            throw new Error("Token não encontrado");
+            showMessage("Fatal Error: Access token is missing. Please log in again.", "error");
+            throw new Error("Token does not exist");
         }
 
-        // Adiciona o Header de Autorização Bearer
         const headers = {
             ...options.headers,
             'Content-Type': 'application/json',
@@ -133,15 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return fetch(`${API_URL}${endpoint}`, { ...options, headers });
     }
 
-    // Função para criar o elemento do card (reutilizável)
     function createTicketCardElement(ticket) {
         const ticketCard = document.createElement('div');
         ticketCard.className = `ticket-card priority-${ticket.priority}`; 
         ticketCard.id = `ticket-${ticket.id}`;
-        ticketCard.draggable = true; // Torna o card arrastável
-
-        // O 'creator' agora é um objeto aninhado
-        const creatorName = ticket.creator ? ticket.creator.username : 'Desconhecido';
+        ticketCard.draggable = true; 
+        const creatorName = ticket.creator ? ticket.creator.username : 'Unknown';
 
         ticketCard.innerHTML = `
             <div class="details">
@@ -149,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>Status: ${ticket.status}</p>
                 <p><small>Criador: ${creatorName}</small></p>
             </div>
-            <button data-id="${ticket.id}" class="delete-btn">Delete (X)</button>
+            <button data-id="${ticket.id}" class="delete-btn">Close (X)</button>
         `;
         return ticketCard;
     }
@@ -160,33 +142,29 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetchProtected('/tickets/list');
             const data = await response.json();
-
-            // Limpa todas as colunas (para o caso de recarregar)
             document.querySelectorAll('.ticket-list').forEach(col => col.innerHTML = '');
 
             if (response.status === 200 && data.data && data.data.length > 0) {
                 data.data.forEach(ticket => {
                     const ticketCard = createTicketCardElement(ticket);
                     
-                    // Lógica para colocar o card na coluna certa
                     if(ticket.status === 'Open') {
-                         document.getElementById('column-Open').appendChild(ticketCard);
+                         document.getElementById('column-open').appendChild(ticketCard);
                     } else if (ticket.status === 'In Progress') {
-                         document.getElementById('column-analise').appendChild(ticketCard);
+                         document.getElementById('column-inprogress').appendChild(ticketCard);
                     } else if (ticket.status === 'Closed') {
-                         document.getElementById('column-Closed').appendChild(ticketCard);
+                         document.getElementById('column-closed').appendChild(ticketCard);
                     } else {
-                         document.getElementById('column-Open').appendChild(ticketCard); // Padrão
+                         document.getElementById('column-open').appendChild(ticketCard);
                     }
                 });
             } else if (response.status === 200 && (!data.data || data.data.length === 0)) {
-                 // 200 OK com lista vazia (corrigido no backend)
-                 columnOpen.innerHTML = '<p>Nenhum ticket cadastrado.</p>';
+                 document.getElementById('column-open').innerHTML = '<p>No tickets available.</p>';
             } else {
-                 showMessage(data.message || 'Erro ao buscar tickets.', 'error');
+                 showMessage(data.message || 'Error fetching tickets.', 'error');
             }
         } catch (error) {
-            showMessage(`Erro de conexão ao buscar tickets.`, 'error');
+            showMessage(`Connection error while fetching tickets.`, 'error');
             console.error('Fetch Tickets Error:', error);
         }
     }
@@ -197,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             logListContainer.innerHTML = '';
-            // Os logs agora estão dentro de 'data'
             if (response.status === 200 && data.data && data.data.length > 0) {
                 data.data.forEach(log => {
                     const logCard = document.createElement('div');
@@ -214,10 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     logListContainer.appendChild(logCard);
                 });
             } else {
-                logListContainer.innerHTML = '<p>Nenhum log de atividade encontrado.</p>';
+                logListContainer.innerHTML = '<p>No logs available.</p>';
             }
         } catch (error) {
-            logListContainer.innerHTML = `<p class="error">Erro ao carregar logs.</p>`;
+            logListContainer.innerHTML = `<p class="error">Error when fetching logs.</p>`;
             console.error('Fetch Logs Error:', error);
         }
     }
@@ -234,9 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // *** CORREÇÃO CRÍTICA ***
-            // O 'user_id' foi REMOVIDO do body. O backend agora pega 
-            // o ID do usuário direto do Token JWT.
+            
             const body = { title, description, priority };
 
             const response = await fetchProtected('/tickets', {
@@ -247,20 +222,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.status === 201) {
-                showMessage(`Ticket criado com sucesso!`, 'success');
-                clearTicketFormFields(); // Limpa o formulário
-                
-                // Adiciona o novo card diretamente na coluna "Open"
-                const newTicket = data.data; // O ticket está em 'data'
+                showMessage(`Ticket created successfully with ID ${data.data.id.substring(0, 8)}...`, 'success');
+                clearTicketFormFields(); 
+                const newTicket = data.data;
                 const ticketCard = createTicketCardElement(newTicket);
-                document.getElementById('column-Open').appendChild(ticketCard);
+                document.getElementById('column-open').appendChild(ticketCard);
 
-                fetchAndRenderLogs(); // Atualiza o relatório de logs
+                fetchAndRenderLogs(); 
             } else {
-                showMessage(`Erro ${response.status}: ${data.details || data.message || data.error}`, 'error');
+                showMessage(`Errr ${response.status}: ${data.details || data.message || data.error}`, 'error');
             }
         } catch (error) {
-            showMessage('Erro de rede ao cadastrar. Verifique o console.', 'error');
+            showMessage('Network error while creating ticket. Check console.', 'error');
         }
     });
 
@@ -268,8 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target.classList.contains('delete-btn')) {
             const ticketId = event.target.dataset.id;
             
-            // Confirmação
-            if (!confirm(`Tem certeza que deseja deletar o ticket ${ticketId.substring(0, 8)}...?`)) {
+            if (!confirm(`Did you really want to close ticket ${ticketId.substring(0, 8)}...? This action cannot be undone.`)) {
                 return;
             }
             
@@ -281,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.status === 200) {
                     showMessage(`Ticket ${ticketId.substring(0, 8)}... deletado.`, 'success');
                     document.getElementById(`ticket-${ticketId}`).remove();
-                    fetchAndRenderLogs(); // Atualiza o relatório de logs
+                    fetchAndRenderLogs();
                 } else {
                     const data = await response.json();
                     showMessage(`Erro ${response.status}: ${data.details || data.message || data.error}`, 'error');
@@ -291,10 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-    // --- Lógica de Drag-and-Drop (Ainda é um MOCK VISUAL) ---
-    // Esta parte apenas move o card na tela.
-    // Para salvar a mudança de status, precisaríamos de uma rota PATCH /tickets/<id>
     
     let draggedCard = null; 
 
@@ -334,16 +302,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (card) {
                 column.appendChild(card);
 
-                // ATUALIZA O STATUS MOCK (somente visual)
                 const statusElement = card.querySelector('.details p:nth-child(2)');
                 const newStatus = column.parentElement.querySelector('.column-title').textContent;
                 if(statusElement) {
                     statusElement.textContent = `Status: ${newStatus}`;
                 }
 
-                // TODO: Chamar fetchProtected(`/tickets/${cardId}`, { method: 'PATCH', ... })
-                // para salvar o novo status no backend.
-                showMessage(`(Mock) Status do ${cardId.substring(0,8)}... mudou para ${newStatus}`, 'success');
+                showMessage(`The status of ticket ${cardId.substring(7, 15)}... has been updated to '${newStatus}'.`, 'success');
             }
         });
     });
