@@ -1,31 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MVP Sistema de Tickets</title>
+    <title>Agile Bison - Sistema de Tickets & Andon AI</title>
     <link rel="icon" type="image/jpg" href="logo.jpg">
-    
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide-react@0.379.0/dist/umd/lucide.min.js"></script>
 </head>
+
 <body>
     <div class="main-container">
-
         <div class="sidebar">
             <h1 class="logo">Ticket<span class="logo-highlight">Man</span></h1>
-            
+
             <div class="form-section" id="auth-section">
                 <h2><i data-lucide="lock" class="icon"></i> Authentication (JWT)</h2>
-                
-                <input type="text" id="reg-username" placeholder="New user (ex: estevam)">
-                <input type="password" id="reg-password" placeholder="New pass (ex: 123)">
+                <input type="text" id="reg-username" placeholder="New user">
+                <input type="password" id="reg-password" placeholder="New pass">
                 <button id="registerUserBtn">1. Register new user</button>
-                
                 <hr class="divider">
-                
-                <input type="text" id="login-username" placeholder="User (ex: estevam)">
-                <input type="password" id="login-password" placeholder="Pass (ex: 123)">
+                <input type="text" id="login-username" placeholder="User">
+                <input type="password" id="login-password" placeholder="Pass">
                 <button id="loginBtn">2. Login </button>
             </div>
 
@@ -34,75 +31,75 @@
                 <input type="text" id="ticketTitle" placeholder="Title">
                 <textarea id="ticketDescription" placeholder="Description"></textarea>
                 <select id="ticketPriority">
-                    <option value="" disabled selected>Shoosed Priority</option>
+                    <option value="" disabled selected>Choose Priority</option>
                     <option value="Low">Low</option>
                     <option value="Middle">Middle</option>
                     <option value="High">High</option>
                 </select>
-                <button id="registerTicketBtn">Create</button>
+                <button id="registerTicketBtn">Create Ticket</button>
             </div>
-            
+
+            <div class="form-section" id="batch-section" style="display: none;">
+                <h2><i data-lucide="file-json" class="icon"></i> Validação de Delta</h2>
+                <input type="file" id="jsonFileInput" accept=".json">
+                <button id="processBatchBtn" style="background-color: var(--accent-yellow); color: var(--bg-primary);">
+                    <i data-lucide="upload-cloud" class="icon"></i> Processar Lote
+                </button>
+            </div>
+
             <div id="message" class="message"></div>
 
             <div class="footer-social">
-                <a href="https://www.linkedin.com/in/estevamjr/" target="_blank">
-                    <i data-lucide="linkedin" class="icon"></i> LinkedIn
-                </a>
-                <a href="https://www.instagram.com/_cyberbison_" target="_blank">
-                    <i data-lucide="instagram" class="icon"></i> Instagram
-                </a>
-                <a href="https://github.com/estevamjr" target="_blank">
-                    <i data-lucide="githhub" class="icon"></i> GitHub
-                </a>
+                <a href="https://github.com/estevamjr" target="_blank"><i data-lucide="github" class="icon"></i>
+                    GitHub</a>
             </div>
-
         </div>
 
         <div class="report-container">
-            
             <button id="logoutBtn" class="logout-button" style="display: none;">Logout</button>
-            
-            <div class="report-section">
-                
-                <h2><i data-lucide="layout-list" class="icon"></i> KanBan Ticket Board</h2>
-                
-                <div class="ticket-board-container">
-                    
-                    <div class="ticket-column">
-                        <h3 class="column-title">Open</h3>
-                        <div class="ticket-list" id="column-open">
-                            <p class="loading-text">Waiting login...</p>
+
+            <div class="report-section" id="andon-section" style="display: none;">
+                <h2><i data-lucide="activity" class="icon"></i> Monitoramento Andon AI (Real-Time)</h2>
+                <div class="andon-wrapper">
+                    <div id="andon-light" class="andon-light status-off"></div>
+                    <div class="andon-info">
+                        <h3 id="andon-status-text">Sistema: Offline</h3>
+                        <p id="andon-details">Aguardando telemetria (Polling ativo a cada 60s).</p>
+                        <div class="telemetry-controls">
+                            <p id="polling-label">Polling: Desativado</p>
+                            <button id="polling-btn" class="polling-button">Ativar Polling</button>
                         </div>
                     </div>
-                    
-                    <div class="ticket-column">
-                        <h3 class="column-title">In Progress</h3>
-                        <div class="ticket-list" id="column-analise">
-                            </div>
-                    </div>
-                    
-                    <div class="ticket-column">
-                        <h3 class="column-title">Closed</h3>
-                        <div class="ticket-list" id="column-Closed">
-                            </div>
-                    </div>
-
                 </div>
             </div>
-            
+
+            <div class="report-section">
+                <h2><i data-lucide="layout-list" class="icon"></i> KanBan Ticket Board</h2>
+                <div class="ticket-board-container">
+                    <div class="ticket-column">
+                        <h3 class="column-title">Open <span class="ticket-counter" id="count-open">0</span></h3>
+                        <div class="ticket-list" id="column-open"></div>
+                    </div>
+                    <div class="ticket-column">
+                        <h3 class="column-title">In Progress <span class="ticket-counter" id="count-inprogress">0</span>
+                        </h3>
+                        <div class="ticket-list" id="column-inprogress"></div>
+                    </div>
+                    <div class="ticket-column">
+                        <h3 class="column-title">Closed <span class="ticket-counter" id="count-closed">0</span></h3>
+                        <div class="ticket-list" id="column-closed"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="report-section">
                 <h2><i data-lucide="clipboard-list" class="icon"></i> Activity Report </h2>
-                <div id="logListContainer">
-                    <p class="loading-text">Waiting login...</p>
-                </div>
+                <div id="logListContainer"></div>
             </div>
         </div>
-
     </div>
-    
     <script src="script.js"></script>
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
+
 </html>

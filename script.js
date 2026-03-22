@@ -1,316 +1,350 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
     const API_URL = 'http://127.0.0.1:5000';
-    
     let global_access_token = null; 
-
-    const authSection = document.getElementById('auth-section');
-    const ticketSection = document.getElementById('ticket-section');
+    let draggedCard = null;
     
-    const boardContainer = document.querySelector('.ticket-board-container');
-    const logListContainer = document.getElementById('logListContainer');
-    const messageDisplay = document.getElementById('message');
-    
-    const registerUserBtn = document.getElementById('registerUserBtn');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerTicketBtn = document.getElementById('registerTicketBtn');
+    // --- VARIÁVEIS DO POLLING ---
+    let pollingInterval = null;
+    let isPollingActive = false;
 
-    const loginPasswordInput = document.getElementById('login-password');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const ui = {
+        auth: document.getElementById('auth-section'),
+        loginUser: document.getElementById('login-username'),
+        loginPass: document.getElementById('login-password'),
+        ticket: document.getElementById('ticket-section'),
+        batch: document.getElementById('batch-section'),
+        andon: document.getElementById('andon-section'),
+        light: document.getElementById('andon-light'),
+        statusText: document.getElementById('andon-status-text'),
+        pollingLabel: document.getElementById('polling-label'),
+        pollingBtn: document.getElementById('polling-btn'),
+        logout: document.getElementById('logoutBtn'),
+        msg: document.getElementById('message'),
+        logCont: document.getElementById('logListContainer'),
+        fileInput: document.getElementById('jsonFileInput')
+    };
 
-
-    function showMessage(text, type = 'error') {
-        messageDisplay.textContent = text;
-        messageDisplay.className = 'message'; 
-        messageDisplay.classList.add(type);
-    }
-    
-    function clearTicketFormFields() {
-        document.getElementById('ticketTitle').value = '';
-        document.getElementById('ticketDescription').value = '';
-        document.getElementById('ticketPriority').value = 'Baixa';
-    }
-
-    registerUserBtn.addEventListener('click', async () => {
-        const username = document.getElementById('reg-username').value;
-        const password = document.getElementById('reg-password').value;
-
-        if (!username || !password) {
-            showMessage("New user and Password are required for registration.", "error");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_URL}/users/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-            const data = await response.json();
-
-            if (response.status === 201) {
-                showMessage(`User '${username}' registered successfully! You can now log in.`, 'success');
-            } else {
-                showMessage(`error ${response.status}: ${data.message || data.error}`, 'error');
-            }
-        } catch (error) {
-            showMessage('error connecting to register. Please contact local Support?', 'error');
-        }
-    });
-
-    loginBtn.addEventListener('click', async () => {
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-
-        if (!username || !password) {
-            showMessage("User and Password are required to log in.", "error");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_URL}/auth`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
-            });
-            
-            const data = await response.json();
-
-            if (response.status === 200) {
-                showMessage(`Login successful! Welcome, ${username}.`, 'success');
-                global_access_token = data.access_token;
-                authSection.style.display = 'none';
-                ticketSection.style.display = 'block';
-                logoutBtn.style.display = 'block';
-                fetchAndRenderTickets();
-                fetchAndRenderLogs();
-            } else {
-                showMessage(`Erro ${response.status}: ${data.message || data.error}`, 'error');
-                global_access_token = null;
-            }
-        } catch (error) {
-            showMessage('Erro de rede ao logar. Backend está rodando?', 'error');
-        }
-    });
-
-    loginPasswordInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            loginBtn.click();
-        }
-    });
-
-    logoutBtn.addEventListener('click', () => {
-        location.reload(); 
-    });
-
-    async function fetchProtected(endpoint, options = {}) {
-        if (!global_access_token) {
-            showMessage("Fatal Error: Access token is missing. Please log in again.", "error");
-            throw new Error("Token does not exist");
-        }
-
-        const headers = {
-            ...options.headers,
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${global_access_token}`
-        };
-
-        return fetch(`${API_URL}${endpoint}`, { ...options, headers });
+    function showMsg(t, type = 'error') {
+        ui.msg.textContent = t; ui.msg.className = `message ${type}`;
+        setTimeout(() => ui.msg.className = 'message', 5000);
     }
 
-    function createTicketCardElement(ticket) {
-        const ticketCard = document.createElement('div');
-        ticketCard.className = `ticket-card priority-${ticket.priority}`; 
-        ticketCard.id = `ticket-${ticket.id}`;
-        ticketCard.draggable = true; 
-        const creatorName = ticket.creator ? ticket.creator.username : 'Unknown';
-
-        ticketCard.innerHTML = `
-            <div class="details">
-                <p><strong>${ticket.title}</strong> (Prioridade: ${ticket.priority})</p>
-                <p>Status: ${ticket.status}</p>
-                <p><small>Criador: ${creatorName}</small></p>
-            </div>
-            <button data-id="${ticket.id}" class="delete-btn">Close (X)</button>
-        `;
-        return ticketCard;
+    async function fetchAPI(end, opt = {}) {
+        const headers = { ...opt.headers, 'Content-Type': 'application/json' };
+        if (global_access_token) headers['Authorization'] = `Bearer ${global_access_token}`;
+        return fetch(`${API_URL}${end}`, { ...opt, headers });
     }
 
-    async function fetchAndRenderTickets() {
-        const columnOpen = document.getElementById('column-Open');
-        
-        try {
-            const response = await fetchProtected('/tickets/list');
-            const data = await response.json();
-            document.querySelectorAll('.ticket-list').forEach(col => col.innerHTML = '');
+    // --- REGISTRO DE USUÁRIO ---
+    const registerBtn = document.getElementById('registerUserBtn');
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async () => {
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
 
-            if (response.status === 200 && data.data && data.data.length > 0) {
-                data.data.forEach(ticket => {
-                    const ticketCard = createTicketCardElement(ticket);
-                    
-                    if(ticket.status === 'Open') {
-                         document.getElementById('column-open').appendChild(ticketCard);
-                    } else if (ticket.status === 'In Progress') {
-                         document.getElementById('column-inprogress').appendChild(ticketCard);
-                    } else if (ticket.status === 'Closed') {
-                         document.getElementById('column-closed').appendChild(ticketCard);
-                    } else {
-                         document.getElementById('column-open').appendChild(ticketCard);
-                    }
-                });
-            } else if (response.status === 200 && (!data.data || data.data.length === 0)) {
-                 document.getElementById('column-open').innerHTML = '<p>No tickets available.</p>';
-            } else {
-                 showMessage(data.message || 'Error fetching tickets.', 'error');
-            }
-        } catch (error) {
-            showMessage(`Connection error while fetching tickets.`, 'error');
-            console.error('Fetch Tickets Error:', error);
-        }
-    }
+            if (!username || !password) return showMsg("Preencha usuário e senha para registrar.");
 
-    async function fetchAndRenderLogs() {
-        try {
-            const response = await fetchProtected('/logs');
-            const data = await response.json();
-
-            logListContainer.innerHTML = '';
-            if (response.status === 200 && data.data && data.data.length > 0) {
-                data.data.forEach(log => {
-                    const logCard = document.createElement('div');
-                    logCard.className = 'log-card';
-                    const timestamp = new Date(log.timestamp).toLocaleString('pt-BR');
-                    
-                    logCard.innerHTML = `
-                        <div>
-                            <span class="action">${log.action}</span>
-                            <span class="details">${log.details}</span>
-                        </div>
-                        <span class="timestamp">${timestamp}</span>
-                    `;
-                    logListContainer.appendChild(logCard);
-                });
-            } else {
-                logListContainer.innerHTML = '<p>No logs available.</p>';
-            }
-        } catch (error) {
-            logListContainer.innerHTML = `<p class="error">Error when fetching logs.</p>`;
-            console.error('Fetch Logs Error:', error);
-        }
-    }
-
-
-    registerTicketBtn.addEventListener('click', async () => {
-        const title = document.getElementById('ticketTitle').value;
-        const description = document.getElementById('ticketDescription').value;
-        const priority = document.getElementById('ticketPriority').value;
-        
-        if (!title || !description) {
-            showMessage("Título e Descrição são obrigatórios.", "error");
-            return;
-        }
-
-        try {
-            
-            const body = { title, description, priority };
-
-            const response = await fetchProtected('/tickets', {
-                method: 'POST',
-                body: JSON.stringify(body),
-            });
-
-            const data = await response.json();
-
-            if (response.status === 201) {
-                showMessage(`Ticket created successfully with ID ${data.data.id.substring(0, 8)}...`, 'success');
-                clearTicketFormFields(); 
-                const newTicket = data.data;
-                const ticketCard = createTicketCardElement(newTicket);
-                document.getElementById('column-open').appendChild(ticketCard);
-
-                fetchAndRenderLogs(); 
-            } else {
-                showMessage(`Errr ${response.status}: ${data.details || data.message || data.error}`, 'error');
-            }
-        } catch (error) {
-            showMessage('Network error while creating ticket. Check console.', 'error');
-        }
-    });
-
-    boardContainer.addEventListener('click', async (event) => {
-        if (event.target.classList.contains('delete-btn')) {
-            const ticketId = event.target.dataset.id;
-            
-            if (!confirm(`Did you really want to close ticket ${ticketId.substring(0, 8)}...? This action cannot be undone.`)) {
-                return;
-            }
-            
             try {
-                const response = await fetchProtected(`/tickets/${ticketId}`, {
-                    method: 'DELETE',
+                const res = await fetchAPI('/users/register', { 
+                    method: 'POST', 
+                    body: JSON.stringify({ username, password }) 
+                });
+                
+                if (res.ok) {
+                    showMsg("Usuário registrado com sucesso! Agora faça o Login.", "success");
+                    document.getElementById('reg-username').value = '';
+                    document.getElementById('reg-password').value = '';
+                } else {
+                    const data = await res.json();
+                    showMsg(data.message || "Erro ao registrar usuário.");
+                }
+            } catch (e) {
+                showMsg("Erro de conexão com o servidor.");
+            }
+        });
+    }
+
+    // --- LOGIN COM SUPORTE AO ENTER ---
+    const handleLogin = async () => {
+        const username = ui.loginUser.value;
+        const password = ui.loginPass.value;
+        try {
+            const res = await fetchAPI('/auth', { method: 'POST', body: JSON.stringify({ username, password }) });
+            const data = await res.json();
+            if (res.status === 200) {
+                global_access_token = data.access_token;
+                ui.auth.style.display = 'none'; 
+                ui.ticket.style.display = 'block'; 
+                ui.batch.style.display = 'block'; 
+                ui.andon.style.display = 'block'; 
+                ui.logout.style.display = 'block';
+                setupDragAndDrop();
+                fetchData(); // Busca inicial de dados
+            } else showMsg("Falha no login.");
+        } catch (e) { showMsg("Erro de conexão."); }
+    };
+
+    if (document.getElementById('loginBtn')) {
+        document.getElementById('loginBtn').addEventListener('click', handleLogin);
+    }
+    if (ui.loginPass) {
+        ui.loginPass.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+    }
+
+    // --- CONTROLE DE POLLING (ON/OFF) ---
+    function executePollingTask() {
+        const sensors = [{ id: "SENS-01", cpu: Math.random()*100 }, { id: "SENS-02", cpu: Math.random()*100 }];
+        sensors.forEach(async (s) => {
+            await runAIAnalysis({ device_id: s.id, cpu_usage_pct: s.cpu, mem_available_gb: 4, active_threats: 0, untrusted_processes: 0 });
+        });
+        fetchData();
+    }
+
+    function togglePolling() {
+        if (isPollingActive) {
+            // DESLIGAR
+            clearInterval(pollingInterval);
+            isPollingActive = false;
+            if (ui.pollingLabel) {
+                ui.pollingLabel.textContent = "Polling: Desativado";
+                ui.pollingLabel.style.color = "var(--text-secondary)";
+            }
+            if (ui.pollingBtn) {
+                ui.pollingBtn.textContent = "Ativar Polling";
+                ui.pollingBtn.style.backgroundColor = "var(--accent-blue)";
+            }
+        } else {
+            // LIGAR
+            executePollingTask(); // Roda uma vez imediatamente
+            pollingInterval = setInterval(executePollingTask, 60000); // Roda a cada 60s
+            isPollingActive = true;
+            if (ui.pollingLabel) {
+                ui.pollingLabel.textContent = "Polling: Ativado (60s)";
+                ui.pollingLabel.style.color = "var(--accent-green)";
+            }
+            if (ui.pollingBtn) {
+                ui.pollingBtn.textContent = "Desativar Polling";
+                ui.pollingBtn.style.backgroundColor = "var(--accent-red)";
+            }
+        }
+    }
+
+    if(ui.pollingBtn) {
+        ui.pollingBtn.addEventListener('click', togglePolling);
+    }
+
+    // --- DRAG & DROP COM ATUALIZAÇÃO DO BANCO ---
+    function setupDragAndDrop() {
+        document.querySelectorAll('.ticket-list').forEach(list => {
+            list.addEventListener('dragover', (e) => { e.preventDefault(); list.classList.add('drag-over'); });
+            list.addEventListener('dragleave', () => list.classList.remove('drag-over'));
+            list.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                list.classList.remove('drag-over');
+                if (draggedCard) {
+                    const ticketId = draggedCard.id.replace('ticket-', '');
+                    
+                    // Pega o título limpo, ignorando o número do contador
+                    let columnTitle = "Open";
+                    const titleEl = list.closest('.ticket-column').querySelector('.column-title');
+                    if (titleEl && titleEl.childNodes.length > 0) {
+                        columnTitle = titleEl.childNodes[0].textContent.trim();
+                    }
+
+                    const statusMap = { "Open": "Open", "In Progress": "In Progress", "Closed": "Closed" };
+                    const newStatus = statusMap[columnTitle] || "Open";
+
+                    list.appendChild(draggedCard);
+
+                    try {
+                        const response = await fetchAPI(`/tickets/${ticketId}`, { 
+                            method: 'PUT', body: JSON.stringify({ status: newStatus }) 
+                        });
+                        if (response.ok) await fetchData(); 
+                        else { showMsg("Erro ao salvar."); fetchData(); }
+                    } catch (err) { fetchData(); }
+                }
+            });
+        });
+    }
+
+    function createCard(t) {
+        const card = document.createElement('div');
+        card.className = `ticket-card priority-${t.priority}`;
+        card.id = `ticket-${t.id}`;
+        card.draggable = true;
+        card.innerHTML = `<strong>${t.title}</strong><br><small>Status: ${t.status}</small>`;
+        
+        card.addEventListener('dragstart', (e) => { 
+            draggedCard = card; card.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => { card.classList.remove('dragging'); draggedCard = null; });
+        return card;
+    }
+
+    // --- IA ANALYSIS API CALL ---
+    async function runAIAnalysis(data) {
+        try {
+            const res = await fetchAPI('/api/andon/analyze', { method: 'POST', body: JSON.stringify(data) });
+            const result = await res.json();
+            if (res.status === 201 && result.data.andon_status >= 1) {
+                await fetchAPI('/tickets', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title: `[IA] Falha: ${data.device_id}`,
+                        description: `Detecção de anomalia. CPU: ${data.cpu_usage_pct}%`,
+                        priority: result.data.andon_status === 2 ? "High" : "Middle"
+                    })
+                });
+            }
+        } catch (e) { 
+            console.error(`Erro IA no dispositivo ${data.device_id}:`, e); 
+        }
+    }
+
+    // --- REFRESH DATA, ATUALIZAR CONTADORES E RECALCULAR ANDON ---
+    async function fetchData() {
+        try {
+            const [resT, resL] = await Promise.all([fetchAPI('/tickets/list'), fetchAPI('/logs')]);
+            const tickets = await resT.json(); 
+            const logs = await resL.json();
+            
+            const cols = { 
+                "open": document.getElementById('column-open'), 
+                "inprogress": document.getElementById('column-inprogress'), 
+                "closed": document.getElementById('column-closed') 
+            };
+            Object.values(cols).forEach(c => { if (c) c.innerHTML = ''; });
+
+            let currentHighestStatus = 0; 
+
+            if (tickets.data) {
+                // FILTROS PARA OS CONTADORES
+                const closedTickets = tickets.data.filter(t => t.status === 'Closed');
+                const otherTickets = tickets.data.filter(t => t.status !== 'Closed');
+                const openTickets = otherTickets.filter(t => t.status === 'Open');
+                const inProgressTickets = otherTickets.filter(t => t.status === 'In Progress');
+
+                // ATUALIZA OS BADGES (Contadores) NO HTML
+                const countOpenObj = document.getElementById('count-open');
+                const countProgObj = document.getElementById('count-inprogress');
+                const countClosObj = document.getElementById('count-closed');
+                
+                if(countOpenObj) countOpenObj.textContent = openTickets.length;
+                if(countProgObj) countProgObj.textContent = inProgressTickets.length;
+                if(countClosObj) countClosObj.textContent = closedTickets.length;
+
+                // RENDERIZA OS CARDS ABERTOS E EM PROGRESSO E CALCULA O ANDON
+                otherTickets.forEach(t => {
+                    const colKey = t.status.toLowerCase().replace(/\s+/g, '');
+                    if (cols[colKey]) cols[colKey].appendChild(createCard(t));
+                    const weight = t.priority === 'High' ? 2 : (t.priority === 'Middle' ? 1 : 0);
+                    if (weight > currentHighestStatus) currentHighestStatus = weight;
                 });
 
-                if (response.status === 200) {
-                    showMessage(`Ticket ${ticketId.substring(0, 8)}... deletado.`, 'success');
-                    document.getElementById(`ticket-${ticketId}`).remove();
-                    fetchAndRenderLogs();
+                // RENDERIZA APENAS OS 5 MAIS RECENTES FECHADOS
+                if (cols["closed"]) {
+                    closedTickets.slice(0, 5).forEach(t => cols["closed"].appendChild(createCard(t)));
+                }
+            }
+
+            // ATUALIZA A LUZ DO ANDON
+            if (ui.light && ui.statusText) {
+                ui.light.className = `andon-light status-${currentHighestStatus}`;
+                const labels = { 0: "SISTEMA NORMAL", 1: "ATENÇÃO: RISCO MÉDIO", 2: "PERIGO: ESTADO CRÍTICO" };
+                ui.statusText.textContent = labels[currentHighestStatus];
+                ui.statusText.style.color = currentHighestStatus === 2 ? "var(--accent-red)" : (currentHighestStatus === 1 ? "var(--accent-yellow)" : "var(--accent-green)");
+            }
+
+            // ATUALIZA OS LOGS
+            if (ui.logCont) {
+                ui.logCont.innerHTML = '';
+                if (logs.data) {
+                    logs.data.slice().reverse().forEach(l => {
+                        const div = document.createElement('div'); div.className = 'log-card';
+                        div.innerHTML = `<span><b>${l.action}</b>: ${l.details}</span>`;
+                        ui.logCont.appendChild(div);
+                    });
+                }
+            }
+        } catch (e) { console.error("Erro Refresh"); }
+    }
+
+    // --- PROCESSAMENTO DE LOTE (BLINDADO E ADAPTADO PARA SEU JSON) ---
+    const processBtn = document.getElementById('processBatchBtn');
+    if (processBtn) {
+        processBtn.addEventListener('click', async () => {
+            const file = ui.fileInput.files[0];
+            if (!file) return showMsg("Selecione um JSON");
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const list = JSON.parse(e.target.result);
+                    showMsg(`Processando lote com IA...`, "success");
+                    ui.fileInput.disabled = true; // Bloqueia o botão enquanto processa
+                    
+                    for (const item of list) {
+                        try {
+                            // Navega na estrutura do JSON (item -> metrics)
+                            const flatData = {
+                                device_id: item.device_id,
+                                cpu_usage_pct: item.metrics ? item.metrics.cpu_usage_pct : item.cpu_usage_pct,
+                                mem_available_gb: item.metrics ? item.metrics.mem_available_gb : item.mem_available_gb,
+                                active_threats: item.metrics ? item.metrics.active_threats : item.active_threats,
+                                untrusted_processes: item.metrics ? item.metrics.untrusted_processes : item.untrusted_processes
+                            };
+                            await runAIAnalysis(flatData);
+                        } catch (innerErr) {
+                            console.error("Falha ao processar item específico", innerErr);
+                        }
+                    }
+                } catch (err) {
+                    showMsg("Erro ao ler o formato do JSON");
+                } finally {
+                    // Roda sempre, atualizando a interface
+                    ui.fileInput.value = ""; 
+                    ui.fileInput.disabled = false;
+                    await fetchData(); 
+                    showMsg("Processamento Delta concluído!", "success");
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    // --- CRIAÇÃO DE TICKET MANUAL ---
+    const registerTicketBtn = document.getElementById('registerTicketBtn');
+    if (registerTicketBtn) {
+        registerTicketBtn.addEventListener('click', async () => {
+            const title = document.getElementById('ticketTitle').value;
+            const description = document.getElementById('ticketDescription').value;
+            const priority = document.getElementById('ticketPriority').value;
+
+            if (!title || !description || !priority) return showMsg('Preencha todos os campos do Ticket');
+
+            try {
+                const res = await fetchAPI('/tickets', {
+                    method: 'POST',
+                    body: JSON.stringify({ title, description, priority })
+                });
+
+                if (res.status === 201) {
+                    document.getElementById('ticketTitle').value = '';
+                    document.getElementById('ticketDescription').value = '';
+                    document.getElementById('ticketPriority').value = '';
+                    fetchData();
+                    showMsg("Ticket criado com sucesso!", "success");
                 } else {
-                    const data = await response.json();
-                    showMessage(`Erro ${response.status}: ${data.details || data.message || data.error}`, 'error');
+                    showMsg('Erro ao criar ticket');
                 }
-            } catch (error) {
-                showMessage('Erro de rede ao deletar. Verifique o console.', 'error');
-            }
-        }
-    });
-    
-    let draggedCard = null; 
-
-    boardContainer.addEventListener('dragstart', (event) => {
-        if (event.target.classList.contains('ticket-card')) {
-            draggedCard = event.target;
-            event.target.classList.add('dragging');
-            event.dataTransfer.setData('text/plain', event.target.id);
-        }
-    });
-
-    boardContainer.addEventListener('dragend', (event) => {
-        if (draggedCard) {
-            draggedCard.classList.remove('dragging');
-            draggedCard = null;
-        }
-    });
-
-    const columns = document.querySelectorAll('.ticket-list');
-    columns.forEach(column => {
-        column.addEventListener('dragover', (event) => {
-            event.preventDefault(); 
-            column.classList.add('drag-over');
-        });
-
-        column.addEventListener('dragleave', () => {
-            column.classList.remove('drag-over');
-        });
-
-        column.addEventListener('drop', (event) => {
-            event.preventDefault();
-            column.classList.remove('drag-over');
-            
-            const cardId = event.dataTransfer.getData('text/plain');
-            const card = document.getElementById(cardId);
-            
-            if (card) {
-                column.appendChild(card);
-
-                const statusElement = card.querySelector('.details p:nth-child(2)');
-                const newStatus = column.parentElement.querySelector('.column-title').textContent;
-                if(statusElement) {
-                    statusElement.textContent = `Status: ${newStatus}`;
-                }
-
-                showMessage(`The status of ticket ${cardId.substring(7, 15)}... has been updated to '${newStatus}'.`, 'success');
+            } catch (e) {
+                showMsg('Erro de conexão');
             }
         });
-    });
+    }
 
+    if (ui.logout) {
+        ui.logout.addEventListener('click', () => location.reload());
+    }
 });

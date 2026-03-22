@@ -1,320 +1,88 @@
 :root {
-    --bg-primary: #111827; 
-    --bg-secondary: #1F2937; 
-    --bg-tertiary: #374151; 
-    --text-primary: #F3F4F6; 
-    --text-secondary: #9CA3AF; 
-    --accent-blue: #3B82F6;
-    --accent-red: #EF4444;
-    --accent-yellow: #EAB308;
-    --accent-green: #22C55E;
+    --bg-primary: #111827; --bg-secondary: #1F2937; --bg-tertiary: #374151; 
+    --text-primary: #F3F4F6; --text-secondary: #9CA3AF; 
+    --accent-blue: #3B82F6; --accent-red: #EF4444; --accent-yellow: #EAB308; --accent-green: #22C55E;
     --border-color: #4B5563;
 }
 
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    margin: 0;
-    overflow-x: hidden;
-}
-
-.main-container {
-    display: flex;
-    flex-wrap: wrap; 
-    width: 100%;
-    min-height: 100vh;
-}
-
-.icon {
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-    stroke-width: 2.5;
-    vertical-align: middle;
-}
-
+body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); margin: 0; overflow-x: hidden; }
+.main-container { display: flex; width: 100%; min-height: 100vh; }
 
 .sidebar {
-    width: 380px;
-    background-color: var(--bg-secondary);
-    padding: 24px;
-    overflow-y: auto;
-    border-right: 1px solid var(--border-color);
-    height: 100vh;
-    box-sizing: border-box;
-    
-    display: flex;
-    flex-direction: column;
+    width: 380px; background-color: var(--bg-secondary); padding: 24px; border-right: 1px solid var(--border-color);
+    height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; overflow-y: auto;
 }
 
-.logo {
-    font-size: 2.5rem;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 30px;
-}
-.logo-highlight {
-    color: var(--accent-blue);
-}
+.logo { font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 30px; }
+.logo-highlight { color: var(--accent-blue); }
 
-.form-section {
-    background-color: var(--bg-primary);
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    border: 1px solid var(--border-color);
-}
+.form-section { background-color: var(--bg-primary); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+input, textarea, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 6px; box-sizing: border-box; background: var(--bg-secondary); color: white; border: 1px solid var(--border-color); display: block; }
 
-.form-section h2 {
-    font-size: 1.25rem;
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-}
+button { background: var(--accent-blue); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+button:hover { filter: brightness(1.2); }
 
-input[type="text"], input[type="password"], textarea, select {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    box-sizing: border-box;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.95rem;
-}
+/* Andon Light */
+.andon-wrapper { display: flex; align-items: center; background: var(--bg-secondary); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); gap: 30px; margin-bottom: 20px; }
+.andon-light { width: 60px; height: 60px; border-radius: 50%; border: 4px solid var(--bg-tertiary); transition: all 0.5s ease; }
+.status-0 { background: var(--accent-green); box-shadow: 0 0 20px var(--accent-green); }
+.status-1 { background: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow); }
+.status-2 { background: var(--accent-red); box-shadow: 0 0 20px var(--accent-red); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-textarea {
-    min-height: 80px;
-    resize: vertical;
-}
+/* Kanban Board */
+.report-container { flex-grow: 1; padding: 24px; height: 100vh; overflow-y: auto; box-sizing: border-box; }
+.ticket-board-container { display: flex; gap: 16px; margin-bottom: 30px; }
+.ticket-column { flex: 1; background: var(--bg-secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); min-height: 450px; }
+.ticket-list { min-height: 400px; padding-bottom: 20px; }
+.ticket-card { background: var(--bg-tertiary); padding: 15px; margin-bottom: 10px; border-radius: 6px; border-left: 5px solid transparent; cursor: grab; }
+.ticket-card.dragging { opacity: 0.4; border: 1px dashed white; }
 
-button {
-    background-color: var(--accent-blue);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    width: 100%;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease;
-}
-button:hover {
-    background-color: #2563EB;
-}
+/* Feedback visual de onde soltar */
+.ticket-list.drag-over { background: rgba(59, 130, 246, 0.15); border: 2px dashed var(--accent-blue); border-radius: 8px; }
 
-button#registerUserBtn {
-    background-color: var(--accent-yellow);
-    color: var(--bg-primary);
-}
-button#registerUserBtn:hover {
-    background-color: #D97706;
-}
+.priority-High { border-left-color: var(--accent-red); }
+.priority-Middle { border-left-color: var(--accent-yellow); }
+.priority-Low { border-left-color: var(--accent-blue); }
 
-.divider {
-    border: 0;
-    border-top: 1px solid var(--border-color);
-    margin: 20px 0;
-}
+#logListContainer { background: #0d1117; padding: 15px; border-radius: 6px; border: 1px solid var(--border-color); max-height: 300px; overflow-y: auto; }
+.message { padding: 12px; border-radius: 6px; display: none; margin-top: 15px; text-align: center; }
+.message.success { display: block; background: #064E3B; color: #A7F3D0; }
+.message.error { display: block; background: #4A1D1D; color: #FFA7A7; }
+.logout-button { background: var(--accent-red); width: auto; float: right; margin-bottom: 10px; }
 
-
-.report-container {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 24px;
-    height: 100vh;
-    box-sizing: border-box;
-}
-.report-section {
-    width: 100%;
-    margin-bottom: 30px;
-}
-.report-section h2 {
-    font-size: 1.5rem;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 10px;
-}
-
-.loading-text {
-    color: var(--text-secondary);
-    font-style: italic;
-}
-
-
-
-
-.ticket-board-container {
-    display: flex;
-    gap: 16px;
-    width: 100%;
-    padding-bottom: 10px; 
-}
-
-
-.ticket-column {
-    flex: 1; 
-    background-color: var(--bg-secondary);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    max-height: 60vh;
-    display: flex;
-    flex-direction: column;
-}
-.column-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-top: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    flex-shrink: 0;
-}
+/* --- FIXANDO A ALTURA DAS COLUNAS DO KANBAN --- */
 .ticket-list {
-    flex-grow: 1; 
-    overflow-y: auto;
-    min-height: 50px;
-    padding-right: 5px;
-}
-
-
-.ticket-card { 
-    background: var(--bg-tertiary);
-    padding: 15px; 
-    margin-bottom: 10px; 
-    border-radius: 6px; 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    cursor: grab; 
-}
-.ticket-card p { margin: 0; font-size: 14px; }
-.ticket-card .details { flex-grow: 1; }
-.ticket-card .details p { color: var(--text-secondary); }
-.ticket-card .details strong { color: var(--text-primary); font-size: 1.1rem; }
-
-
-.ticket-card.dragging {
-    opacity: 0.5;
-    transform: rotate(2deg);
-}
-
-.ticket-column .ticket-list.drag-over {
-    background-color: rgba(59, 130, 246, 0.1);
-    border: 1px dashed var(--accent-blue);
-}
-
-
-
-.priority-Alta { border-left: 5px solid var(--accent-red); }
-.priority-Média { border-left: 5px solid var(--accent-yellow); }
-.priority-Baixa { border-left: 5px solid var(--accent-blue); }
-
-.delete-btn { 
-    background-color: var(--accent-red); 
-    color: white; 
-    border: none; 
-    padding: 6px 12px; 
-    border-radius: 4px; 
-    cursor: pointer;
-    width: auto; 
-    font-size: 0.9rem;
-}
-.delete-btn:hover { background-color: #B91C1C; }
-
-
-#logListContainer {
-    max-height: 300px;
-    overflow-y: auto;
-    background: var(--bg-secondary);
-    border-radius: 6px;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-}
-.log-card {
-    background: var(--bg-tertiary);
-    padding: 10px 15px;
-    margin-bottom: 8px;
+    min-height: 450px; /* Mantém a coluna visível mesmo vazia */
+    max-height: 500px; /* Limite máximo para evitar tela infinita */
+    overflow-y: auto;  /* Ativa o scroll interno se passar de ~5 cards */
+    padding: 10px 5px;
+    background: rgba(0, 0, 0, 0.1); /* Um leve fundo para destacar a área de drop */
     border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-}
-.log-card .action { font-weight: 600; color: var(--accent-blue); }
-.log-card .details { color: var(--text-secondary); }
-.log-card .timestamp { font-size: 0.8rem; color: var(--text-secondary); }
-
-
-.message {
-    font-weight: 600;
-    margin-top: 15px;
-    padding: 12px;
-    border-radius: 6px;
-    display: none;
-    font-size: 0.9rem;
-    text-align: center; 
-}
-.message.error {
-    display: block;
-    color: #FFA7A7;
-    background-color: #4A1D1D;
-    border: 1px solid var(--accent-red);
-}
-.message.success {
-    display: block;
-    color: #A7F3D0;
-    background-color: #064E3B;
-    border: 1px solid var(--accent-green);
 }
 
-
-
-
-.footer-social {
-    margin-top: auto; 
-    padding-top: 20px;
-    border-top: 1px solid var(--border-color);
-    text-align: center;
+/* Customizando a barra de rolagem para ficar discreta (Estilo Dark) */
+.ticket-list::-webkit-scrollbar {
+    width: 6px;
 }
-.footer-social a {
-    color: var(--text-secondary);
-    text-decoration: none;
-    margin: 0 10px;
-    font-size: 0.9rem;
+.ticket-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
 }
-.footer-social a:hover {
-    color: var(--accent-blue);
+.ticket-list::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 10px;
 }
-.footer-social .icon {
-    width: 14px;
-    height: 14px;
-    stroke-width: 2;
+.ticket-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-blue);
 }
 
-
-.logout-button {
-    background-color: var(--accent-red);
-    color: white;
-    width: auto; 
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    float: right; 
-    margin-bottom: 10px;
-}
-.logout-button:hover {
-    background-color: #B91C1C;
+/* Badge de Contador do Kanban */
+.ticket-counter {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: 10px;
+    vertical-align: middle;
 }
